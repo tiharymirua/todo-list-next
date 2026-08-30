@@ -2,6 +2,7 @@
 
 import { todo } from "node:test"
 import { useState, useEffect } from "react"
+import { Trash2, User2 } from "lucide-react"
 
 type Todo = {
   id: number,
@@ -12,6 +13,8 @@ type Todo = {
 export default function Home(){
   const [todos, setTodos] = useState<Todo[]>([])
   const [input, setInput] = useState("")
+
+  const [filter, setFilter] = useState<"all"|"done"|"history">("all")
 
   useEffect(() => {
     fetch("api/todos")
@@ -53,60 +56,53 @@ export default function Home(){
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center pt-16 px-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Loop Habit Tracker
-        </h1>
-
-        <div className="flex gap-2 mb-6">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Nouvelle tâche"
-            className="flex-1 text-black border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onKeyDown={(e) => {
-              if(e.key === "Enter"){
-                  addTodo()
-                }
-              } 
-            }
-          />
-          <button
-            onClick={addTodo}
-            className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            Ajouter
-          </button>
-        </div>
-        <ul className="flex items-center bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm space-y-2">
-          {todos.map((todo) => (
-            <li
-              key={todo.id}
-              className="flex items-center justify-around px-4 w-100"
+    <main className="min-h-screen bg-gray-50 pt-6 px-4">
+      <nav>
+        <div
+          className="flex justify-between items-center"  
+        >
+          <h1
+            className="text-black text-xl"
+          >Tâches</h1>
+          <div className="flex gap-2">
+            <div 
+              id="button-group"
+              className="w-auto flex gap-3 text-gray-600 bg-gray-100 p-1 rounded-xl"
             >
-              <input 
-                type="checkbox" 
-                className="w-10"
-              />
-              <span
-                onClick={() => toggleTodo(todo.id, todo.done)}
-                className={`cursor-pointer ${
-                  todo.done ? "line-through text-gray-400" : "text-gray-800"
+              <button 
+                onClick={() => setFilter("all")}
+                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
+                  filter === "all"
+                    ? "bg-white text-gray-900 shadow-md"
+                    : "text-gray-600 hover:text-gray-800"
                 }`}
-              >
-                {todo.text}
-              </span>
-              <button
-                onClick={() => deleteTodo(todo.id, todo.done)}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                Supprimer
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+              >All</button>
+              <button 
+                onClick={() => setFilter("done")}
+                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
+                  filter === "done"
+                    ? "bg-white text-gray-900 shadow-md"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >Done</button>
+              <button 
+                onClick={() => setFilter("history")}
+                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
+                  filter === "history"
+                    ? "bg-white text-gray-900 shadow-md"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >History</button>
+            </div>
+            <button className="text-gray-600 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:bg-transparent">
+              <User2 />
+            </button>
+          </div>
+        </div>
+        <div id="search-bar-container">
+
+        </div>
+      </nav>
     </main>
   );
 }
