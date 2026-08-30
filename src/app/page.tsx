@@ -3,6 +3,8 @@
 import { todo } from "node:test"
 import { useState, useEffect } from "react"
 import { Trash2, User2 } from "lucide-react"
+import { motion } from "framer-motion"
+import { filter } from "framer-motion/client"
 
 type Todo = {
   id: number,
@@ -13,8 +15,13 @@ type Todo = {
 export default function Home(){
   const [todos, setTodos] = useState<Todo[]>([])
   const [input, setInput] = useState("")
+  const [filter, setFilter] = useState<"all" | "done" | "history">("all");
 
-  const [filter, setFilter] = useState<"all"|"done"|"history">("all")
+  const filters = [
+    { key : "all", label : "All"},
+    { key : "done", label : "Done"},
+    { key : "history", label : "History"},
+  ] as const
 
   useEffect(() => {
     fetch("api/todos")
@@ -67,32 +74,32 @@ export default function Home(){
           <div className="flex gap-2">
             <div 
               id="button-group"
-              className="w-auto flex gap-3 text-gray-600 bg-gray-100 p-1 rounded-xl"
+              className="relative w-auto flex gap-3 text-gray-600 bg-gray-100 p-1 rounded-xl"
             >
-              <button 
-                onClick={() => setFilter("all")}
-                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
-                  filter === "all"
-                    ? "bg-white text-gray-900 shadow-md"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-              >All</button>
-              <button 
-                onClick={() => setFilter("done")}
-                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
-                  filter === "done"
-                    ? "bg-white text-gray-900 shadow-md"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-              >Done</button>
-              <button 
-                onClick={() => setFilter("history")}
-                className={`cursor-pointer px-3 py-1 rounded-lg transition-all duration-200 ${
-                  filter === "history"
-                    ? "bg-white text-gray-900 shadow-md"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
-              >History</button>
+              {
+                filters.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    className="relative cursor-pointer px-3 py-1 rounded-lg z-10"
+                  >
+                    {
+                      filter === key && (
+                        <motion.div
+                          layoutId="activePill"
+                          className="absolute inset-0 bg-white rounded-lg shadow-md -z-10"
+                          transition = {{type: "spring", stiffness: 400, damping: 30}}
+                        />
+                      )
+                    }
+                    <span
+                      className={filter === key ? "text-gray-900" : "text-gray-600"}
+                    >
+                      {label}
+                    </span>
+                  </button>
+                ))
+              }
             </div>
             <button className="text-gray-600 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:bg-transparent">
               <User2 />
