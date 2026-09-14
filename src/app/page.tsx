@@ -24,6 +24,16 @@ export default function Home(){
     { key : "history", label : "History"},
   ] as const
 
+  const filteredTodos = todos.filter(
+    (todo) => {
+      if(filter === "done") return todo.done
+      if(filter === "history") return todo.done // Modifier plus tard pour les historiques
+      return true
+    }
+  ).filter(
+    (todo) => todo.text.toLocaleLowerCase().includes(search.toLowerCase())
+  )
+
   useEffect(() => {
     fetch("api/todos")
       .then((res) => res.json())
@@ -127,7 +137,58 @@ export default function Home(){
         </div>
       </nav>
 
-      
+      <section id="todo-list-heart text-center">
+        <table className="w-full mt-4 border-separate border-spacing-y-2">
+          <thead className="text-gray-500 text-sm text-left">
+            <tr>
+              <th className="font-medium px-3"></th>
+              <th className="font-medium px-3">Clé</th>
+              <th className="font-medium px-3">Nom</th>
+              <th className="font-medium px-3">Status</th>
+              <th className="font-medium px-3">Dead line</th>
+              <th className="font-medium px-3">Priorité</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTodos.map((todo) => (
+              <tr
+                key={todo.id}
+                className="bg-white shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <td className="px-3 py-3 rounded-l-lg">
+                  <input
+                    type="checkbox"
+                    checked={todo.done}
+                    onChange={() => toggleTodo(todo.id, todo.done)}
+                    className="cursor-pointer"
+                  />
+                </td>
+                <td className="px-3 text-gray-400 text-sm">{todo.id}</td>
+                <td
+                  className={`px-3 ${
+                    todo.done ? "line-through text-gray-400" : "text-gray-800"
+                  }`}
+                >
+                  {todo.text}
+                </td>
+                <td className="px-3">
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      todo.done
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {todo.done ? "Terminé" : "En cours"}
+                  </span>
+                </td>
+                <td className="px-3 text-gray-400">—</td>
+                <td className="px-3 rounded-r-lg text-gray-400">—</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </main>
   );
 }
