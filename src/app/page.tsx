@@ -2,9 +2,9 @@
 
 import { todo } from "node:test"
 import { useState, useEffect } from "react"
-import { Trash2, User2, Search, SlidersHorizontal } from "lucide-react"
+import { Trash2, User2, Search, SlidersHorizontal, Plus } from "lucide-react"
 import { motion } from "framer-motion"
-import { filter } from "framer-motion/client"
+import { div, filter } from "framer-motion/client"
 
 type Todo = {
   id: number,
@@ -13,11 +13,14 @@ type Todo = {
 }
 
 export default function Home(){
+  //Declaration des hooks d'etat
   const [todos, setTodos] = useState<Todo[]>([])
   const [input, setInput] = useState("")
   const [filter, setFilter] = useState<"all" | "done" | "history">("all");
   const [search, setSearch] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
+  //Filtres
   const filters = [
     { key : "all", label : "All"},
     { key : "done", label : "Done"},
@@ -33,13 +36,13 @@ export default function Home(){
   ).filter(
     (todo) => todo.text.toLocaleLowerCase().includes(search.toLowerCase())
   )
-
+  //Rest API calls
   useEffect(() => {
     fetch("api/todos")
       .then((res) => res.json())
       .then((data) => setTodos(data))
   }, [])
-
+  //Fonction d'ajout d'une tache
   async function addTodo(){
     if(input.trim() === "") return
 
@@ -54,7 +57,7 @@ export default function Home(){
     setTodos([...todos, newTodo])
     setInput("")
   }
-
+  //Fonction de marquage de tache comme faite ou non faite
   async function toggleTodo(id: number, done: boolean){
     const res = await fetch(`/api/todos/${id}`, {
       method: "PATCH",
@@ -65,7 +68,7 @@ export default function Home(){
     const updated = await res.json()
     setTodos(todos.map( (t) => (t.id === id ? updated : t)))
   }
-
+  //Fonction de suppression d'une tache
   async function deleteTodo(id: number, done: boolean){
     await fetch(`api/todos/${id}`, {
       method: "DELETE"
@@ -118,7 +121,7 @@ export default function Home(){
           </div>
         </div>
         <div id="search-bar-container" className="mt-4 flex justify-between items-center">
-          <div className="relative">
+          <div className="relative flex flex-1 items-center gap-2">
             <Search
               size={18}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -129,6 +132,11 @@ export default function Home(){
               placeholder="Rechercher une tache..."
               className="w-100 pl-10 pr-4 py-2 bg-gray-100 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
             />
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 text-white p-2 rounded-xl cursor-pointer hover:bg-blue-700 transition-all duration-200 hover:translate-y-1">
+                <Plus size={20}/>
+              </button>
           </div>
           <div className="filter-button flex gap-3 pe-3 items-center text-gray-500">
               <SlidersHorizontal />
@@ -189,6 +197,48 @@ export default function Home(){
           </tbody>
         </table>
       </section>
+    {isModalOpen && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Nouvelle tâche
+          </h2>
+          <input 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e)  => {
+              if(e.key === "Enter") {
+                addTodo()
+                setIsModalOpen(false)
+              }
+            }}
+            placeholder="Nom de la tâche"
+            autoFocus
+            className="text-black w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+          />
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => {
+                addTodo()
+                setIsModalOpen(false)
+              }}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200"  
+            >
+              Ajouter
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+
+    }
     </main>
   );
 }
