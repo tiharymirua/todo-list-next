@@ -24,13 +24,14 @@ export default function Home(){
   const [filter, setFilter] = useState<"all" | "done" | "history">("all");
   const [search, setSearch] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [deadline, setDeadline] = useState("")
   const [priority, setPriority] = useState<Priority>("normal")
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
 
   function openEditModal(todo: Todo){
     setEditingTodo(todo)
-    setIsModalOpen(true)
+    setIsEditModalOpen(true)
   }
 
   //Filtres
@@ -111,7 +112,7 @@ export default function Home(){
 
     const updated = await res.json()
     setTodos(todos.map((t) => (t.id === updated.id ? updated : t)))
-    setIsModalOpen(true)
+    setIsEditModalOpen(true)
     setEditingTodo(null)
   }
 
@@ -336,7 +337,7 @@ export default function Home(){
       </div>
     )
     }
-    {isModalOpen && editingTodo && (
+    {isEditModalOpen && editingTodo && (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
@@ -387,7 +388,7 @@ export default function Home(){
           <div className="flex justify-end gap-2">
             <button
               onClick={() => {
-                setIsModalOpen(false);
+                setIsEditModalOpen(false);
                 setEditingTodo(null);
               }}
               className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200"
