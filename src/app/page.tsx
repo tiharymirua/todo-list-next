@@ -9,7 +9,10 @@ import { div, filter } from "framer-motion/client"
 type Todo = {
   id: number,
   text: string,
-  done: boolean
+  done: boolean,
+  deadline: string | null
+  priority: string,
+  createdAt: string
 }
 
 export default function Home(){
@@ -19,6 +22,8 @@ export default function Home(){
   const [filter, setFilter] = useState<"all" | "done" | "history">("all");
   const [search, setSearch] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [deadline, setDeadline] = useState("")
+  const [priority, setPriority] = useState<"basse" | "normale" | "haute">("normale")
 
   //Filtres
   const filters = [
@@ -56,6 +61,8 @@ export default function Home(){
 
     setTodos([...todos, newTodo])
     setInput("")
+    setDeadline("")
+    setPriority("normale")
   }
   //Fonction de marquage de tache comme faite ou non faite
   async function toggleTodo(id: number, done: boolean){
@@ -135,7 +142,7 @@ export default function Home(){
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-blue-600 text-white p-2 rounded-xl cursor-pointer hover:bg-blue-700 transition-all duration-200 hover:translate-y-1">
-                <Plus size={20}/>
+                <Plus size={20}/>         
               </button>
           </div>
           <div className="filter-button flex gap-3 pe-3 items-center text-gray-500">
@@ -216,7 +223,33 @@ export default function Home(){
             autoFocus
             className="text-black w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400" 
           />
-
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600 mb-1">Deadline</label>
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600 mb-1">Priorité</label>
+            <div className="flex gap-2">
+              {(["basse", "normale", "haute"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPriority(p)}
+                  className={`flex-1 py-2 rounded-lg text-sm capitalize transition-all duration-200 ${
+                    priority === p
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setIsModalOpen(false)}
