@@ -2,7 +2,7 @@
 
 import { todo } from "node:test"
 import { useState, useEffect } from "react"
-import { Trash2, User2, Search, SlidersHorizontal, Plus } from "lucide-react"
+import { Trash2, User2, Search, SlidersHorizontal, Plus, Pencil } from "lucide-react"
 import { motion } from "framer-motion"
 import { div, filter } from "framer-motion/client"
 
@@ -24,6 +24,12 @@ export default function Home(){
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deadline, setDeadline] = useState("")
   const [priority, setPriority] = useState<"normal" | "priorité" | "urgent">("normal")
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+
+  function openEditModal(todo: Todo){
+    setEditingTodo(todo)
+    setIsModalOpen(true)
+  }
 
   //Filtres
   const filters = [
@@ -80,11 +86,31 @@ export default function Home(){
     setTodos(todos.map( (t) => (t.id === id ? updated : t)))
   }
   //Fonction de suppression d'une tache
-  async function deleteTodo(id: number, done: boolean){
+  async function deleteTodo(id: number){
     await fetch(`api/todos/${id}`, {
       method: "DELETE"
     })
     setTodos(todos.filter((t) => t.id != id))
+  }
+
+  //Update Todos
+  async function updateTodo(){
+    if(!editingTodo) return
+
+    const res = await fetch(`/api/todos/${editingTodo.id}`, {
+      method: "PATCH",
+      headers: {"Content-Type" : "application/json"},
+      body: JSON.stringify({
+        text: editingTodo.text,
+        deadline: editingTodo.deadline || null,
+        priority: editingTodo.priority,
+      }),
+    })
+
+    const updated = await res.json()
+    setTodos(todos.map((t) => (t.id === updated.id ? updated : t)))
+    setIsModalOpen(true)
+    setEditingTodo(null)
   }
 
   return (
@@ -166,6 +192,7 @@ export default function Home(){
               <th className="font-medium px-3">Status</th>
               <th className="font-medium px-3">Dead line</th>
               <th className="font-medium px-3">Priorité</th>
+              <th className="font-medium px-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -218,6 +245,22 @@ export default function Home(){
                   >
                     {todo.priority}
                   </span>
+                </td>
+                <td className="px-3 rounded-r-lg">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditModal(todo)}
+                      className="text-gray-500 hover:text-blue-600 transition-all duration-200 hover:-translate-y-1"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      onClick={() => deleteTodo(todo.id)}
+                      className="text-gray-500 hover:text-red-600 transition-all duration-200 hover:-translate-y-1"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -290,8 +333,75 @@ export default function Home(){
         </div>
       </div>
     )
-
     }
+    {isModalOpen && editingTodo && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Modifier la tâche
+          </h2>
+
+          <input
+            value={editingTodo.text}
+            onChange={(e) =>
+              setEditingTodo({ ...editingTodo, text: e.target.value })
+            }
+            className="w-full text-black border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600 mb-1">Deadline</label>
+            <input
+              type="date"
+              value={editingTodo.deadline?.slice(0, 10) ?? ""}
+              onChange={(e) =>
+                setEditingTodo({ ...editingTodo, deadline: e.target.value })
+              }
+              className="w-full text-black border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600 mb-1">Priorité</label>
+            <div className="flex gap-2">
+              {(["basse", "normale", "haute"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() =>
+                    setEditingTodo({ ...editingTodo, priority: p })
+                  }
+                  className={`flex-1 py-2 rounded-lg text-sm capitalize transition-all duration-200 ${
+                    editingTodo.priority === p
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingTodo(null);
+              }}
+              className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={updateTodo}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200"
+            >
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </main>
   );
 }
