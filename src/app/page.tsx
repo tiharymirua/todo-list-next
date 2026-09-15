@@ -16,6 +16,8 @@ type Todo = {
 }
 
 export default function Home(){
+  //Priorité
+  type Priority = "normal" | "priorité" | "urgent"
   //Declaration des hooks d'etat
   const [todos, setTodos] = useState<Todo[]>([])
   const [input, setInput] = useState("")
@@ -23,7 +25,7 @@ export default function Home(){
   const [search, setSearch] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deadline, setDeadline] = useState("")
-  const [priority, setPriority] = useState<"normal" | "priorité" | "urgent">("normal")
+  const [priority, setPriority] = useState<Priority>("normal")
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
 
   function openEditModal(todo: Todo){
@@ -236,11 +238,11 @@ export default function Home(){
                 <td className="px-3">
                   <span
                     className={`text-xs px-2 py-1 rounded-full capitalize ${
-                      todo.priority === "haute"
+                      todo.priority === "urgent"
                         ? "bg-red-100 text-red-700"
-                        : todo.priority === "basse"
-                        ? "bg-gray-100 text-gray-500"
-                        : "bg-blue-100 text-blue-700"
+                        : todo.priority === "priorité"
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-gray-100 text-gray-500"
                     }`}
                   >
                     {todo.priority}
@@ -364,7 +366,7 @@ export default function Home(){
           <div className="mb-4">
             <label className="block text-sm text-gray-600 mb-1">Priorité</label>
             <div className="flex gap-2">
-              {(["basse", "normale", "haute"] as const).map((p) => (
+              {(["normal", "priorité", "urgent"] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() =>
