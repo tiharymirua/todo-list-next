@@ -10,9 +10,9 @@ type Todo = {
   id: number,
   text: string,
   done: boolean,
-  deadline: string | null
+  deadline: string | null,
   priority: string,
-  createdAt: string
+  createdAt: string,
 }
 
 export default function Home(){
@@ -23,7 +23,7 @@ export default function Home(){
   const [search, setSearch] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deadline, setDeadline] = useState("")
-  const [priority, setPriority] = useState<"basse" | "normale" | "haute">("normale")
+  const [priority, setPriority] = useState<"normal" | "priorité" | "urgent">("normal")
 
   //Filtres
   const filters = [
@@ -54,7 +54,11 @@ export default function Home(){
     const res = await fetch("api/todos", {
       method: "POST",
       headers: { "Content-Type" : "application/json"},
-      body: JSON.stringify({ text: input}),
+      body: JSON.stringify({ 
+        text: input,
+        deadline: deadline || null,
+        priority: priority,
+      }),
     })
 
     const newTodo = await res.json()
@@ -62,7 +66,7 @@ export default function Home(){
     setTodos([...todos, newTodo])
     setInput("")
     setDeadline("")
-    setPriority("normale")
+    setPriority("normal")
   }
   //Fonction de marquage de tache comme faite ou non faite
   async function toggleTodo(id: number, done: boolean){
@@ -197,8 +201,24 @@ export default function Home(){
                     {todo.done ? "Terminé" : "En cours"}
                   </span>
                 </td>
-                <td className="px-3 text-gray-400">—</td>
-                <td className="px-3 rounded-r-lg text-gray-400">—</td>
+                <td className="px-3 text-gray-500 text-sm">
+                  {todo.deadline
+                    ? new Date(todo.deadline).toLocaleDateString("fr-FR")
+                    : "—"}
+                </td>
+                <td className="px-3">
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full capitalize ${
+                      todo.priority === "haute"
+                        ? "bg-red-100 text-red-700"
+                        : todo.priority === "basse"
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {todo.priority}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -235,7 +255,7 @@ export default function Home(){
           <div className="mb-4">
             <label className="block text-sm text-gray-600 mb-1">Priorité</label>
             <div className="flex gap-2">
-              {(["basse", "normale", "haute"] as const).map((p) => (
+              {(["normal", "priorité", "urgent"] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPriority(p)}
