@@ -12,6 +12,7 @@ export async function PATCH(
     where: { id: Number(id) },
     data: {
       ...(body.done !== undefined && { done: body.done }),
+      ...(body.status !== undefined && {status: body.status}),
       ...(body.text !== undefined && { text: body.text }),
       ...(body.deadline !== undefined && {
         deadline: body.deadline ? new Date(body.deadline) : null,

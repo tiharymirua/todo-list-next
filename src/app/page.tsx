@@ -2,14 +2,17 @@
 
 import { todo } from "node:test"
 import { useState, useEffect } from "react"
-import { Trash2, User2, Search, SlidersHorizontal, Plus, Pencil } from "lucide-react"
+import { Archive, Trash2, User2, Search, SlidersHorizontal, Play, Plus, Pencil } from "lucide-react"
 import { motion } from "framer-motion"
 import { div, filter } from "framer-motion/client"
+
+type Status = "En attente" | "en cours" 
 
 type Todo = {
   id: number,
   text: string,
   done: boolean,
+  status: Status,
   deadline: string | null,
   priority: string,
   createdAt: string,
@@ -87,6 +90,22 @@ export default function Home(){
 
     const updated = await res.json()
     setTodos(todos.map( (t) => (t.id === id ? updated : t)))
+  }
+  //Fonction pour démarrer le minuteur du todo
+  async function startTodo(id: number){
+    const res = await fetch(`/api/todos/$[id]`, {
+      method: "PATCH",
+      headers: {"Content-Type" : "application/json"},
+      body: JSON.stringify({status: "en cours"})
+    })
+
+    const updated = await res.json()
+    setTodos(todos.map((t) => (t.id === id ? updated:t)))
+  }
+  //Fonction pour archiver une tache
+  async function archiveTodo(id: number){
+    await fetch(`api/todos/${id}`, {method: "DELETE"})
+    setTodos(todos.filter((t) => t.id !== id))
   }
   //Fonction de suppression d'une tache
   async function deleteTodo(id: number){
@@ -225,10 +244,16 @@ export default function Home(){
                     className={`text-xs px-2 py-1 rounded-full ${
                       todo.done
                         ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                        : todo.status === "en cours"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-100 text-gray-500"
                     }`}
                   >
-                    {todo.done ? "Terminé" : "En cours"}
+                    {todo.done
+                      ? "Terminé"
+                      : todo.status === "en cours"
+                      ? "En cours"
+                      : "en attente"}
                   </span>
                 </td>
                 <td className="px-3 text-gray-500 text-sm">
@@ -251,6 +276,22 @@ export default function Home(){
                 </td>
                 <td className="px-3 rounded-r-lg">
                   <div className="flex gap-2">
+                    {!todo.done && todo.status === "En attente" && (
+                      <button
+                        onClick={() => startTodo(todo.id)}
+                        className="text-gray-500 hover:text-green-600 transition-all duration-200 hover:-translate-y-1"
+                      >
+                        <Play size={16} />
+                      </button>
+                    )}
+                    {todo.done && (
+                      <button
+                        onClick={() => archiveTodo(todo.id)}
+                        className="text-gray-500 hover:text-purple-600 transition-all duration-200 hover:-translate-y-1"
+                      >
+                        <Archive size={16} />
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(todo)}
                       className="text-gray-500 hover:text-blue-600 transition-all duration-200 hover:-translate-y-1"

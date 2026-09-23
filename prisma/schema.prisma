@@ -16,6 +16,7 @@ model Todo {
   id Int @id @default(autoincrement())
   text String
   done Boolean @default(false)
+  status String @default("en attente")
   deadline DateTime?
   priority String @default("normal")
   createdAt DateTime @default(now())
