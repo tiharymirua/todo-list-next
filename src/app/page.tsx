@@ -6,7 +6,7 @@ import { Archive, Trash2, User2, Search, SlidersHorizontal, Play, Plus, Pencil }
 import { motion } from "framer-motion"
 import { div, filter } from "framer-motion/client"
 
-type Status = "En attente" | "en cours" 
+type Status = "en attente" | "en cours" 
 
 type Todo = {
   id: number,
@@ -93,7 +93,7 @@ export default function Home(){
   }
   //Fonction pour démarrer le minuteur du todo
   async function startTodo(id: number){
-    const res = await fetch(`/api/todos/$[id]`, {
+    const res = await fetch(`/api/todos/${id}`, {
       method: "PATCH",
       headers: {"Content-Type" : "application/json"},
       body: JSON.stringify({status: "en cours"})
@@ -276,7 +276,8 @@ export default function Home(){
                 </td>
                 <td className="px-3 rounded-r-lg">
                   <div className="flex gap-2">
-                    {!todo.done && todo.status === "En attente" && (
+                    
+                    {(!todo.done && todo.status === "en attente") && (
                       <button
                         onClick={() => startTodo(todo.id)}
                         className="text-gray-500 hover:text-green-600 transition-all duration-200 hover:-translate-y-1"
