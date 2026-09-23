@@ -82,10 +82,12 @@ export default function Home(){
   }
   //Fonction de marquage de tache comme faite ou non faite
   async function toggleTodo(id: number, done: boolean){
+    if(done) return
+
     const res = await fetch(`/api/todos/${id}`, {
       method: "PATCH",
       headers: {"Content-Type" : "application/json"},
-      body: JSON.stringify({done: !done}),
+      body: JSON.stringify({done: true}),
     })
 
     const updated = await res.json()
@@ -214,27 +216,34 @@ export default function Home(){
               <th className="font-medium px-3">Status</th>
               <th className="font-medium px-3">Dead line</th>
               <th className="font-medium px-3">Priorité</th>
-              <th className="font-medium px-3">Actions</th>
+              <th className="font-medium px-3 w-28">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredTodos.map((todo) => (
               <tr
                 key={todo.id}
-                className="bg-white shadow-sm hover:shadow-md transition-all duration-200"
+                className={`relative bg-white shadow-sm hover:shadow-md transition-all duration-200 ${
+                    todo.done ? "opacity-60" : ""
+                  }`}
               >
+                {todo.done && (
+                  <td className="absolute left-0 right-28 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="border-t border-gray-400 mx-3" />
+                  </td>
+                )}
                 <td className="px-3 py-3 rounded-l-lg">
                   <input
                     type="checkbox"
                     checked={todo.done}
                     onChange={() => toggleTodo(todo.id, todo.done)}
-                    className="cursor-pointer"
+                    className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </td>
                 <td className="px-3 text-gray-400 text-sm">{todo.id}</td>
                 <td
                   className={`px-3 ${
-                    todo.done ? "line-through text-gray-400" : "text-gray-800"
+                    todo.done ? "text-gray-400" : "text-gray-800"
                   }`}
                 >
                   {todo.text}
@@ -274,7 +283,7 @@ export default function Home(){
                     {todo.priority}
                   </span>
                 </td>
-                <td className="px-3 rounded-r-lg">
+                <td className="px-3 rounded-r-lg w-28">
                   <div className="flex gap-2">
                     
                     {(!todo.done && todo.status === "en attente") && (
